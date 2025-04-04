@@ -38,7 +38,7 @@ import androidx.navigation.NavController
 import com.example.healthtracker.R
 
 @Composable
-fun SignUpScreen(navController: NavController) {
+fun LoginScreen(navController: NavController) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }

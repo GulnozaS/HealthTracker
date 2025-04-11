@@ -1,8 +1,10 @@
 package com.example.healthtracker.user_interface.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -21,110 +23,118 @@ fun HelpCenterScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 32.dp)
-            .verticalScroll(rememberScrollState())
+            .background(Color(0xFFF0F0F0))  // Same light gray bg
+            .padding(16.dp)  // Consistent padding
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)  // Uniform spacing
     ) {
-        // Header
-        Text(
-            text = "Help Center",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        // Header (matches LoginScreen)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Help Center",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Text(
+                text = "Get assistance for all your health needs",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+        }
 
-        Text(
-            text = "Get assistance and support for all your health needs",
-            fontSize = 16.sp,
-            color = Color.Gray,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        // Search Section
-        Text(
-            text = "How can we help you?",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
+        // Search Bar (identical to LoginScreen fields)
         OutlinedTextField(
             value = "",
             onValueChange = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp),
+            modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Search help articles...") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Search"
+                    contentDescription = "Search",
+                    tint = Color.Gray  // Same gray icon
                 )
             },
-            shape = MaterialTheme.shapes.medium,
+            shape = RoundedCornerShape(12.dp),  // Matched rounded corners
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = MaterialTheme.colorScheme.primary
+                focusedBorderColor = Color(0xFF673AB7)  // Purple focus
             )
         )
 
-        // Quick Actions
+        // Quick Actions (styled like LoginScreen buttons)
         Text(
             text = "Quick Actions",
-            fontSize = 18.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 16.dp)
+            color = Color.Black
         )
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 40.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            ActionButton("Live Chat")
+            ActionButton("Live Chat")  // Reusable component
             ActionButton("Call Us")
             ActionButton("Email")
         }
 
-        // FAQ Section
+        // FAQ Section (white card like HistoryScreen)
         Text(
-            text = "Frequently Asked Questions",
-            fontSize = 18.sp,
+            text = "FAQs",
+            fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 16.dp)
+            color = Color.Black
         )
 
-        FAQItem("How do I update my health profile?")
-        FAQItem("How to schedule a consultation?")
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(16.dp)  // Same as HistoryScreen
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                FAQItem("How to update health profile?")
+                FAQItem("Schedule a consultation?")
+                FAQItem("View test results?")
+            }
+        }
     }
 }
 
+// Reusable Purple-Outline Button (like LoginScreen's secondary actions)
 @Composable
 private fun ActionButton(text: String) {
     Button(
-        onClick = { /* Handle action */ },
-        modifier = Modifier
-            .width(100.dp)
-            .height(48.dp),
+        onClick = { /* Handle click */ },
+        modifier = Modifier.width(100.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
-            contentColor = MaterialTheme.colorScheme.primary
+            contentColor = Color(0xFF673AB7)  // Purple text
         ),
-        border = ButtonDefaults.outlinedButtonBorder
+        border = ButtonDefaults.outlinedButtonBorder.copy(
+            width = 1.dp,
+            color = Color(0xFF673AB7)  // Purple border
+        ),
+        shape = RoundedCornerShape(12.dp)  // Slightly rounded
     ) {
-        Text(text = text, fontSize = 14.sp)
+        Text(text, fontSize = 14.sp)
     }
 }
 
+// FAQ Item with Divider (clean, like HistoryScreen's list)
 @Composable
 private fun FAQItem(question: String) {
-    Text(
-        text = question,
-        fontSize = 16.sp,
-        modifier = Modifier
-            .padding(vertical = 12.dp)
-            .fillMaxWidth()
-    )
-    Divider(color = Color.LightGray, thickness = 1.dp)
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = question,
+            fontSize = 16.sp,
+            color = Color.Black,
+            modifier = Modifier.padding(vertical = 12.dp)
+        )
+        Divider(
+            color = Color.LightGray.copy(alpha = 0.5f),  // Subtle divider
+            thickness = 1.dp
+        )
+    }
 }
-

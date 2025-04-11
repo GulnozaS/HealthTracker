@@ -1,8 +1,11 @@
 package com.example.healthtracker.user_interface.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,100 +21,52 @@ fun HistoryScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+            .background(color = Color(0xFFF0F0F0))
+            .padding(horizontal = 16.dp, vertical = 24.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Title
-        Text(
-            text = "Medical Records",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        // Recent Records Section
-        Text(
-            text = "Recent Records",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "General Checkup",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "Dr. Sarah Johnson - Cardiology",
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-                Text(
-                    text = "May 15, 2023",
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-                Text(
-                    text = "Blood pressure: 120/80, Heart rate: 72 bpm",
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
+        // Header Section
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = "Medical Records",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Text(
+                text = "View your complete medical history",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
         }
 
-        Divider(color = Color.LightGray, modifier = Modifier.padding(vertical = 8.dp))
-
-        // Lab Results Section
-        Text(
-            text = "Lab Results",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 8.dp)
+        // Recent Records Card
+        MedicalRecordCard(
+            title = "General Checkup",
+            date = "May 15, 2023",
+            subtitle = "Dr. Sarah Johnson - Cardiology",
+            content = "Blood pressure: 120/80, Heart rate: 72 bpm"
         )
 
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Metropolitan Medical Lab",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                Text(
-                    text = "May 1, 2023",
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-                Text(
-                    text = "Complete Blood Count, Lipid Panel",
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-        }
+        // Lab Results Card
+        MedicalRecordCard(
+            title = "Metropolitan Medical Lab",
+            date = "May 1, 2023",
+            subtitle = "Complete Blood Count",
+            content = "Lipid Panel, Glucose Levels"
+        )
 
-        // Medical History Stats
+        // Health Summary Section
         Text(
-            text = "Medical History",
+            text = "Health Summary",
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
+            color = Color.Black
         )
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             StatCard(title = "Prescriptions", value = "12")
@@ -119,18 +74,83 @@ fun HistoryScreen(navController: NavController) {
             StatCard(title = "Lab Tests", value = "8")
         }
 
-        Divider(color = Color.LightGray, modifier = Modifier.padding(vertical = 8.dp))
-
-        // Schedule Appointment Button
+        // Action Button
         Button(
-            onClick = { /* Navigate to appointment scheduling */ },
+            onClick = { navController.navigate("appointment") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4285F4))
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF673AB7)
+            ),
+            shape = RoundedCornerShape(25.dp)
         ) {
-            Text(text = "Schedule New Appointment", fontSize = 16.sp)
+            Text(
+                text = "Schedule New Appointment",
+                fontSize = 16.sp,
+                color = Color.White
+            )
+        }
+
+        // Footer Link
+        Text(
+            text = "View Complete History",
+            color = Color(0xFF673AB7),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .clickable { navController.navigate("full_history") }
+                .padding(8.dp)
+        )
+    }
+}
+
+@Composable
+private fun MedicalRecordCard(
+    title: String,
+    date: String,
+    subtitle: String,
+    content: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
+                Text(
+                    text = date,
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = subtitle,
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = content,
+                fontSize = 15.sp
+            )
         }
     }
 }
@@ -141,7 +161,8 @@ private fun StatCard(title: String, value: String) {
         modifier = Modifier
             .width(100.dp)
             .height(100.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -151,7 +172,8 @@ private fun StatCard(title: String, value: String) {
             Text(
                 text = value,
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF673AB7)
             )
             Text(
                 text = title,

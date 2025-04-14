@@ -22,8 +22,9 @@ fun HistoryScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color(0xFFF0F0F0))
-            .padding(horizontal = 16.dp, vertical = 24.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp)
+
+    .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header Section

@@ -16,7 +16,7 @@ import com.example.healthtracker.user_interface.screens.SignUpScreen
 fun NavGraph() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "helpcenter") {
+    NavHost(navController = navController, startDestination = "ai") {
         composable("signup") { SignUpScreen(navController) }
         composable("login") { LoginScreen(navController) }
         composable("history") { HistoryScreen(navController) }

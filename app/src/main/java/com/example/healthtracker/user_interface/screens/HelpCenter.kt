@@ -1,14 +1,15 @@
 package com.example.healthtracker.user_interface.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,124 +18,165 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpCenterScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF0F0F0))  // Same light gray bg
-            .padding(16.dp)  // Consistent padding
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)  // Uniform spacing
+            .background(Color(0xFFF0F0F0))
+            .padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp)
+
+           .verticalScroll(rememberScrollState())
     ) {
-        // Header (matches LoginScreen)
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Header
+        Column(modifier = Modifier.padding(bottom = 24.dp)) {
             Text(
                 text = "Help Center",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Get assistance for all your health needs",
+                text = "Get assistance and support for all your health needs",
                 fontSize = 16.sp,
                 color = Color.Gray
             )
         }
 
-        // Search Bar (identical to LoginScreen fields)
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search help articles...") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = Color.Gray  // Same gray icon
-                )
-            },
-            shape = RoundedCornerShape(12.dp),  // Matched rounded corners
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = Color(0xFF673AB7)  // Purple focus
-            )
+        Divider(
+            color = Color.LightGray.copy(alpha = 0.3f),
+            thickness = 1.dp,
+            modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        // Quick Actions (styled like LoginScreen buttons)
+        // Quick Actions
         Text(
             text = "Quick Actions",
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
-            color = Color.Black
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            ActionButton("Live Chat")  // Reusable component
-            ActionButton("Call Us")
-            ActionButton("Email")
-        }
-
-        // FAQ Section (white card like HistoryScreen)
-        Text(
-            text = "FAQs",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black
-        )
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            shape = RoundedCornerShape(16.dp)  // Same as HistoryScreen
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                FAQItem("How to update health profile?")
-                FAQItem("Schedule a consultation?")
-                FAQItem("View test results?")
+            ActionButton("Call Us", Modifier.width(110.dp)) {
+                navController.navigate("call_support")
+            }
+            ActionButton("Email", Modifier.width(110.dp)) {
+                navController.navigate("email_support")
             }
         }
-    }
-}
 
-// Reusable Purple-Outline Button (like LoginScreen's secondary actions)
-@Composable
-private fun ActionButton(text: String) {
-    Button(
-        onClick = { /* Handle click */ },
-        modifier = Modifier.width(100.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = Color(0xFF673AB7)  // Purple text
-        ),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            width = 1.dp,
-            color = Color(0xFF673AB7)  // Purple border
-        ),
-        shape = RoundedCornerShape(12.dp)  // Slightly rounded
-    ) {
-        Text(text, fontSize = 14.sp)
-    }
-}
-
-// FAQ Item with Divider (clean, like HistoryScreen's list)
-@Composable
-private fun FAQItem(question: String) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+        // FAQ Section
         Text(
-            text = question,
-            fontSize = 16.sp,
+            text = "Frequently Asked Questions",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
             color = Color.Black,
-            modifier = Modifier.padding(vertical = 12.dp)
+            modifier = Modifier.padding(bottom = 16.dp)
         )
-        Divider(
-            color = Color.LightGray.copy(alpha = 0.5f),  // Subtle divider
-            thickness = 1.dp
+
+        FAQSection()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Footer
+        Text(
+            text = "We're here to help 24/7. Average response time: 5 minutes",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+    }
+}
+
+@Composable
+private fun ActionButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(48.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF673AB7),
+            contentColor = Color.White
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+// FAQ Data Class with state
+data class FAQItem(
+    val question: String,
+    val answer: String,
+    var isExpanded: Boolean = false
+)
+
+@Composable
+fun FAQSection() {
+    val faqItems = remember {
+        mutableStateListOf(
+            FAQItem("How do I update my health profile?", "Go to Profile > Edit Profile to update your information."),
+            FAQItem("How to schedule a consultation?", "Visit Appointments to book with your preferred provider."),
+            FAQItem("Where can I find my medical records?", "All records are organized in the History section.")
+        )
+    }
+
+    Column {
+        faqItems.forEachIndexed { index, item ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+                    .clickable {
+                        faqItems[index] = item.copy(isExpanded = !item.isExpanded)
+                    },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = if (item.isExpanded) Color(0xFF673AB7) else Color.Gray
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = item.question,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black
+                        )
+                    }
+
+                    if (item.isExpanded) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = item.answer,
+                            fontSize = 14.sp,
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+            }
+        }
     }
 }

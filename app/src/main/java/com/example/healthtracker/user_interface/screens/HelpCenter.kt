@@ -1,12 +1,15 @@
 package com.example.healthtracker.user_interface.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,116 +18,165 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpCenterScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 32.dp)
-            .verticalScroll(rememberScrollState())
+            .background(Color(0xFFF0F0F0))
+            .padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp)
+
+           .verticalScroll(rememberScrollState())
     ) {
         // Header
-        Text(
-            text = "Help Center",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        Text(
-            text = "Get assistance and support for all your health needs",
-            fontSize = 16.sp,
-            color = Color.Gray,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        // Search Section
-        Text(
-            text = "How can we help you?",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp),
-            placeholder = { Text("Search help articles...") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search"
-                )
-            },
-            shape = MaterialTheme.shapes.medium,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = MaterialTheme.colorScheme.primary
+        Column(modifier = Modifier.padding(bottom = 24.dp)) {
+            Text(
+                text = "Help Center",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Get assistance and support for all your health needs",
+                fontSize = 16.sp,
+                color = Color.Gray
+            )
+        }
+
+        Divider(
+            color = Color.LightGray.copy(alpha = 0.3f),
+            thickness = 1.dp,
+            modifier = Modifier.padding(vertical = 8.dp)
         )
 
         // Quick Actions
         Text(
             text = "Quick Actions",
-            fontSize = 18.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
+            color = Color.Black,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 40.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(bottom = 32.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            ActionButton("Live Chat")
-            ActionButton("Call Us")
-            ActionButton("Email")
+            ActionButton("Call Us", Modifier.width(110.dp)) {
+                navController.navigate("call_support")
+            }
+            ActionButton("Email", Modifier.width(110.dp)) {
+                navController.navigate("email_support")
+            }
         }
 
         // FAQ Section
         Text(
             text = "Frequently Asked Questions",
-            fontSize = 18.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
+            color = Color.Black,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        FAQItem("How do I update my health profile?")
-        FAQItem("How to schedule a consultation?")
+        FAQSection()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Footer
+        Text(
+            text = "We're here to help 24/7. Average response time: 5 minutes",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
     }
 }
 
 @Composable
-private fun ActionButton(text: String) {
+private fun ActionButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     Button(
-        onClick = { /* Handle action */ },
-        modifier = Modifier
-            .width(100.dp)
-            .height(48.dp),
+        onClick = onClick,
+        modifier = modifier.height(48.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = MaterialTheme.colorScheme.primary
+            containerColor = Color(0xFF673AB7),
+            contentColor = Color.White
         ),
-        border = ButtonDefaults.outlinedButtonBorder
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Text(text = text, fontSize = 14.sp)
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
-@Composable
-private fun FAQItem(question: String) {
-    Text(
-        text = question,
-        fontSize = 16.sp,
-        modifier = Modifier
-            .padding(vertical = 12.dp)
-            .fillMaxWidth()
-    )
-    Divider(color = Color.LightGray, thickness = 1.dp)
-}
+// FAQ Data Class with state
+data class FAQItem(
+    val question: String,
+    val answer: String,
+    var isExpanded: Boolean = false
+)
 
+@Composable
+fun FAQSection() {
+    val faqItems = remember {
+        mutableStateListOf(
+            FAQItem("How do I update my health profile?", "Go to Profile > Edit Profile to update your information."),
+            FAQItem("How to schedule a consultation?", "Visit Appointments to book with your preferred provider."),
+            FAQItem("Where can I find my medical records?", "All records are organized in the History section.")
+        )
+    }
+
+    Column {
+        faqItems.forEachIndexed { index, item ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp)
+                    .clickable {
+                        faqItems[index] = item.copy(isExpanded = !item.isExpanded)
+                    },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            tint = if (item.isExpanded) Color(0xFF673AB7) else Color.Gray
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = item.question,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black
+                        )
+                    }
+
+                    if (item.isExpanded) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = item.answer,
+                            fontSize = 14.sp,
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

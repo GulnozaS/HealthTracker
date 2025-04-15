@@ -21,6 +21,7 @@ fun NavGraph() {
     NavHost(navController = navController, startDestination = "home") {
         composable("signup") { SignUpScreen(navController) }
         composable("login") { LoginScreen(navController) }
+        composable("history") { HistoryScreen(navController) }
         composable("helpcenter") { HelpCenterScreen(navController) }
         composable("ai") { AIScreen(navController) }
         composable("account_setup") { AccountSetupScreen(navController) }

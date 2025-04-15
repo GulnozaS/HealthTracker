@@ -23,7 +23,6 @@ fun NavGraph() {
         composable("login") { LoginScreen(navController) }
         composable("helpcenter") { HelpCenterScreen(navController) }
         composable("ai") { AIScreen(navController) }
-
         composable("account_setup") { AccountSetupScreen(navController) }
         composable("home") { HomeScreen(navController) }
     }

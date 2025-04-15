@@ -9,6 +9,8 @@ import androidx.navigation.compose.NavHost
 import com.example.healthtracker.user_interface.screens.AIScreen
 import com.example.healthtracker.user_interface.screens.HelpCenterScreen
 import com.example.healthtracker.user_interface.screens.HistoryScreen
+import com.example.healthtracker.user_interface.screens.AccountSetupScreen
+import com.example.healthtracker.user_interface.screens.HomeScreen
 import com.example.healthtracker.user_interface.screens.LoginScreen
 import com.example.healthtracker.user_interface.screens.SignUpScreen
 
@@ -16,11 +18,13 @@ import com.example.healthtracker.user_interface.screens.SignUpScreen
 fun NavGraph() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "ai") {
+    NavHost(navController = navController, startDestination = "home") {
         composable("signup") { SignUpScreen(navController) }
         composable("login") { LoginScreen(navController) }
         composable("helpcenter") { HelpCenterScreen(navController) }
         composable("ai") { AIScreen(navController) }
 
+        composable("account_setup") { AccountSetupScreen(navController) }
+        composable("home") { HomeScreen(navController) }
     }
 }

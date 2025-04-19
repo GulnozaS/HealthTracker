@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "654248853254",
+    "project_id": "medhub-664cb",
+    "storage_bucket": "medhub-664cb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654248853254:android:9cda3f6157a6091935e887",
+        "android_client_info": {
+          "package_name": "com.example.healthtracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2aLEmYZj_BkqG8wSDchT_wRBZ75GjYoc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654248853254:android:59302124968a297835e887",
+        "android_client_info": {
+          "package_name": "com.mycompany.medhub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2aLEmYZj_BkqG8wSDchT_wRBZ75GjYoc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

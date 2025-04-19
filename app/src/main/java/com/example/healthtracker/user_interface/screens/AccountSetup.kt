@@ -1,58 +1,46 @@
 package com.example.healthtracker.user_interface.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DisplayMode
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.healthtracker.R
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSetupScreen(navController: NavController) {
+    // Firebase instances
+    val auth = Firebase.auth
+    val firestore = Firebase.firestore
+    val context = LocalContext.current
+
+    // States for saving process
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     // Personal Information
     var fullName by remember { mutableStateOf("") }
     var dateOfBirth by remember { mutableStateOf("") }
@@ -60,8 +48,7 @@ fun AccountSetupScreen(navController: NavController) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis(),
-        initialDisplayMode = DisplayMode.Picker,
-        yearRange = 1900..(Calendar.getInstance().get(Calendar.YEAR))
+        yearRange = 1900..Calendar.getInstance().get(Calendar.YEAR)
     )
 
     // Physical Characteristics
@@ -82,6 +69,79 @@ fun AccountSetupScreen(navController: NavController) {
     var contactPhone by remember { mutableStateOf("") }
     var relationship by remember { mutableStateOf("") }
 
+    fun formatDate(timestamp: Long?): String {
+        if (timestamp == null) return ""
+        val date = Date(timestamp)
+        val format = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        return format.format(date)
+    }
+
+    fun processListInput(input: String): List<String> {
+        return input.split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+    }
+
+    fun saveProfile() {
+        // Validate required fields
+        when {
+            fullName.isBlank() -> errorMessage = "Full name is required"
+            dateOfBirth.isBlank() -> errorMessage = "Date of birth is required"
+            bloodType.isBlank() -> errorMessage = "Blood type is required"
+            height.isBlank() -> errorMessage = "Height is required"
+            weight.isBlank() -> errorMessage = "Weight is required"
+            contactName.isBlank() -> errorMessage = "Emergency contact name is required"
+            contactPhone.isBlank() -> errorMessage = "Emergency contact phone is required"
+            else -> {
+                isLoading = true
+                errorMessage = null
+
+                val userId = auth.currentUser?.uid ?: run {
+                    errorMessage = "User not authenticated"
+                    isLoading = false
+                    return
+                }
+
+                val userData = hashMapOf(
+                    "personalInfo" to hashMapOf(
+                        "fullName" to fullName,
+                        "dateOfBirth" to dateOfBirth,
+                        "gender" to selectedGender
+                    ),
+                    "physicalCharacteristics" to hashMapOf(
+                        "bloodType" to bloodType,
+                        "height" to height.toInt(),
+                        "weight" to weight.toInt()
+                    ),
+                    "medicalHistory" to hashMapOf(
+                        "allergies" to processListInput(allergies),
+                        "chronicConditions" to selectedConditions.filter { it != "None" }.toList(),
+                        "medications" to processListInput(medications)
+                    ),
+                    "emergencyContact" to hashMapOf(
+                        "name" to contactName,
+                        "phone" to contactPhone,
+                        "relationship" to relationship
+                    ),
+                    "profileComplete" to true,
+                    "lastUpdated" to FieldValue.serverTimestamp()
+                )
+
+                firestore.collection("users").document(userId)
+                    .set(userData, SetOptions.merge())
+                    .addOnSuccessListener {
+                        navController.navigate("home") {
+                            popUpTo("account_setup") { inclusive = true }
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        errorMessage = "Failed to save: ${e.localizedMessage}"
+                        isLoading = false
+                    }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -94,7 +154,7 @@ fun AccountSetupScreen(navController: NavController) {
             text = "Health Profile",
             fontSize = 36.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = Color.Black
         )
 
         Text(
@@ -102,6 +162,15 @@ fun AccountSetupScreen(navController: NavController) {
             fontSize = 16.sp,
             color = Color.Gray
         )
+
+        // Error message display
+        errorMessage?.let { message ->
+            Text(
+                text = message,
+                color = Color.Red,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
 
         // Personal Information Card
         Card(
@@ -116,39 +185,37 @@ fun AccountSetupScreen(navController: NavController) {
                 Text(
                     text = "Personal Information",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    fontWeight = FontWeight.Bold
                 )
 
                 OutlinedTextField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    label = { Text("Full Name") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Full Name *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = fullName.isBlank() && errorMessage != null
                 )
 
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth() // Standard text field height
-                        .background(Color.White, RoundedCornerShape(4.dp), )
+                        .fillMaxWidth()
+                        .background(Color.White, RoundedCornerShape(4.dp))
                         .border(
                             width = 1.dp,
-                            color = Color.Gray, // Change this to your desired border color
+                            color = if (dateOfBirth.isBlank() && errorMessage != null) Color.Red else Color.Gray,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .clickable { showDatePicker = true }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                        Text(
-                            text = if (dateOfBirth.isNotEmpty()) dateOfBirth else "Select Date",
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-
+                    Text(
+                        text = dateOfBirth.ifEmpty { "Select Date of Birth *" },
+                        color = if (dateOfBirth.isEmpty()) Color.Gray else Color.Black,
+                        fontSize = 16.sp
+                    )
                 }
 
-                Text(text = "Gender", fontSize = 16.sp)
+                Text(text = "Gender *", fontSize = 16.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = selectedGender == "Male",
@@ -187,7 +254,7 @@ fun AccountSetupScreen(navController: NavController) {
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(text = "Blood Type", fontSize = 16.sp)
+                Text(text = "Blood Type *", fontSize = 16.sp)
                 ExposedDropdownMenuBox(
                     expanded = bloodTypeExpanded,
                     onExpandedChange = { bloodTypeExpanded = !bloodTypeExpanded }
@@ -201,7 +268,9 @@ fun AccountSetupScreen(navController: NavController) {
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor()
+                            .menuAnchor(),
+                        label = { Text("Select Blood Type *") },
+                        isError = bloodType.isBlank() && errorMessage != null
                     )
 
                     ExposedDropdownMenu(
@@ -227,15 +296,19 @@ fun AccountSetupScreen(navController: NavController) {
                     OutlinedTextField(
                         value = height,
                         onValueChange = { height = it },
-                        label = { Text("Height (cm)") },
-                        modifier = Modifier.weight(1f)
+                        label = { Text("Height (cm) *") },
+                        modifier = Modifier.weight(1f),
+                        isError = height.isBlank() && errorMessage != null,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
                     OutlinedTextField(
                         value = weight,
                         onValueChange = { weight = it },
-                        label = { Text("Weight (kg)") },
-                        modifier = Modifier.weight(1f)
+                        label = { Text("Weight (kg) *") },
+                        modifier = Modifier.weight(1f),
+                        isError = weight.isBlank() && errorMessage != null,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
             }
@@ -260,8 +333,9 @@ fun AccountSetupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = allergies,
                     onValueChange = { allergies = it },
-                    label = { Text("Allergies") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Allergies (comma separated)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Peanuts, Penicillin, etc.") }
                 )
 
                 Text(text = "Chronic Conditions", fontSize = 16.sp)
@@ -289,8 +363,9 @@ fun AccountSetupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = medications,
                     onValueChange = { medications = it },
-                    label = { Text("Current Medications") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Current Medications (comma separated)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Ibuprofen, Metformin, etc.") }
                 )
             }
         }
@@ -314,15 +389,18 @@ fun AccountSetupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = contactName,
                     onValueChange = { contactName = it },
-                    label = { Text("Contact Name") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Contact Name *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = contactName.isBlank() && errorMessage != null
                 )
 
                 OutlinedTextField(
                     value = contactPhone,
                     onValueChange = { contactPhone = it },
-                    label = { Text("Contact Phone") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Contact Phone *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = contactPhone.isBlank() && errorMessage != null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                 )
 
                 OutlinedTextField(
@@ -336,14 +414,19 @@ fun AccountSetupScreen(navController: NavController) {
 
         // Save Button
         Button(
-            onClick = { /* Save profile logic */ },
+            onClick = { saveProfile() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
-            shape = RoundedCornerShape(25.dp)
+            shape = RoundedCornerShape(25.dp),
+            enabled = !isLoading
         ) {
-            Text(text = "Save Profile", fontSize = 16.sp, color = Color.White)
+            if (isLoading) {
+                CircularProgressIndicator(color = Color.White)
+            } else {
+                Text(text = "Save Profile", fontSize = 16.sp, color = Color.White)
+            }
         }
 
         // HIPAA Compliance Text
@@ -354,14 +437,8 @@ fun AccountSetupScreen(navController: NavController) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }
-    // Date Picker Dialog
-    fun formatDate(timestamp: Long?): String {
-        if (timestamp == null) return ""
-        val date = Date(timestamp)
-        val format = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
-        return format.format(date)
-    }
 
+    // Date Picker Dialog
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },

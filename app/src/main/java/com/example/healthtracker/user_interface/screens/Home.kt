@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -36,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.healthtracker.R
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -52,6 +55,7 @@ fun HomeScreen(navController: NavController) {
                 .background(Color(0xFF673AB7))
                 .padding(16.dp)
         ) {
+            Button(onClick = { Firebase.auth.signOut() }) {}
             Text(
                 text = "HomePageOverall",
                 color = Color.White,

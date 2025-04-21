@@ -39,8 +39,8 @@ fun NavGraph() {
             if (authenticated) {
                 val userId = auth.currentUser?.uid ?: return@LaunchedEffect
                 val userDoc = firestore.collection("users").document(userId).get().await()
-                isProfileComplete = userDoc.exists() && userDoc.getString("gender")?.isNotEmpty() == true
-            }
+                isProfileComplete = userDoc.exists() &&
+                        (userDoc.get("personalInfo") as? Map<String, Any>)?.get("gender")?.toString()?.isNotEmpty() == true            }
         } catch (e: Exception) {
             // On error, treat as unauthenticated
             isAuthenticated = false
@@ -70,6 +70,7 @@ fun NavGraph() {
         composable("account_setup") { AccountSetupScreen(navController) }
         composable("home") { HomeScreen(navController) }
         composable("loading") { SplashScreen() }
+        composable("forgot_password") { ForgotPasswordScreen(navController) }
     }
 }
 

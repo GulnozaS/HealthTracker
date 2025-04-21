@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -38,12 +39,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.healthtracker.R
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -52,7 +58,6 @@ fun LoginScreen(navController: NavController) {
             .padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Welcome Back header
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 text = "Welcome Back",
@@ -67,7 +72,6 @@ fun LoginScreen(navController: NavController) {
             )
         }
 
-        // Email and Password fields
         Column(
             modifier = Modifier
                 .background(
@@ -77,7 +81,6 @@ fun LoginScreen(navController: NavController) {
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Email field
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -97,7 +100,6 @@ fun LoginScreen(navController: NavController) {
                 ),
             )
 
-            // Password field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -122,33 +124,58 @@ fun LoginScreen(navController: NavController) {
             )
         }
 
-        // Forgot Password link
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage ?: "",
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+
         Text(
             text = "Forgot Password?",
             color = Color(0xFF673AB7),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.End)
+            modifier = Modifier.align(Alignment.End).clickable { navController.navigate("forgot_password")}
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Sign In Button
         Button(
-            onClick = { /* Handle login logic */ },
+            onClick = {
+                if (email.isBlank() || password.isBlank()) {
+                    errorMessage = "Please fill in all fields"
+                    return@Button
+                }
+
+                isLoading = true
+                errorMessage = null
+
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(email.trim(), password)
+                    .addOnCompleteListener { task ->
+                        isLoading = false
+                        if (task.isSuccessful) {
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        } else {
+                            errorMessage = task.exception?.localizedMessage ?: "Login failed"
+                        }
+                    }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
             shape = RoundedCornerShape(25.dp)
         ) {
-            Text(text = "Sign In", fontSize = 16.sp, color = Color.White)
+            Text(text = if (isLoading) "Signing In..." else "Sign In", fontSize = 16.sp, color = Color.White)
         }
 
-        // Divider line
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Don't have an account? Sign Up
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text(text = "Don't have an account?", color = Color.Gray, fontSize = 14.sp)
             Spacer(modifier = Modifier.width(4.dp))
@@ -158,7 +185,7 @@ fun LoginScreen(navController: NavController) {
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
-                    navController.navigate("signup") // Navigate to signup screen
+                    navController.navigate("signup")
                 }
             )
         }

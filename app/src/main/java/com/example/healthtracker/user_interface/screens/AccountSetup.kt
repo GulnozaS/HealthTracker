@@ -8,13 +8,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -35,7 +35,6 @@ fun AccountSetupScreen(navController: NavController) {
     // Firebase instances
     val auth = Firebase.auth
     val firestore = Firebase.firestore
-    val context = LocalContext.current
 
     // States for saving process
     var isLoading by remember { mutableStateOf(false) }
@@ -62,7 +61,7 @@ fun AccountSetupScreen(navController: NavController) {
     var allergies by remember { mutableStateOf("") }
     var selectedConditions by remember { mutableStateOf(setOf<String>()) }
     val conditions = listOf("None", "Diabetes", "Hypertension", "Asthma", "Heart Disease")
-    var medications by remember { mutableStateOf("") }
+    var medicationsInput by remember { mutableStateOf("") }
 
     // Emergency Contact
     var contactName by remember { mutableStateOf("") }
@@ -80,6 +79,22 @@ fun AccountSetupScreen(navController: NavController) {
         return input.split(",")
             .map { it.trim() }
             .filter { it.isNotEmpty() }
+    }
+
+    fun parseMedications(input: String): Map<String, Map<String, String>> {
+        return input.split(",")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .associate { medication ->
+                val parts = medication.split("-").map { it.trim() }
+                val name = parts.getOrElse(0) { "Unknown" }
+                val details = mutableMapOf<String, String>("name" to name)
+
+                if (parts.size >= 2) details["dosage"] = parts[1]
+                if (parts.size >= 3) details["schedule"] = parts[2]
+
+                name to details
+            }
     }
 
     fun saveProfile() {
@@ -116,7 +131,7 @@ fun AccountSetupScreen(navController: NavController) {
                     "medicalHistory" to hashMapOf(
                         "allergies" to processListInput(allergies),
                         "chronicConditions" to selectedConditions.filter { it != "None" }.toList(),
-                        "medications" to processListInput(medications)
+                        "medications" to parseMedications(medicationsInput)
                     ),
                     "emergencyContact" to hashMapOf(
                         "name" to contactName,
@@ -163,7 +178,6 @@ fun AccountSetupScreen(navController: NavController) {
             color = Color.Gray
         )
 
-        // Error message display
         errorMessage?.let { message ->
             Text(
                 text = message,
@@ -335,7 +349,7 @@ fun AccountSetupScreen(navController: NavController) {
                     onValueChange = { allergies = it },
                     label = { Text("Allergies (comma separated)") },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Peanuts, Penicillin, etc.") }
+                    placeholder = { Text("peanuts, penicillin, etc.") }
                 )
 
                 Text(text = "Chronic Conditions", fontSize = 16.sp)
@@ -361,11 +375,14 @@ fun AccountSetupScreen(navController: NavController) {
                 }
 
                 OutlinedTextField(
-                    value = medications,
-                    onValueChange = { medications = it },
-                    label = { Text("Current Medications (comma separated)") },
+                    value = medicationsInput,
+                    onValueChange = { medicationsInput = it },
+                    label = { Text("Current Medications") },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Ibuprofen, Metformin, etc.") }
+                    placeholder = {
+                        Text("Format: name-dosage-schedule, e.g. ibuprofen-500mg 3x daily-after meals")
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
             }
         }
@@ -412,7 +429,6 @@ fun AccountSetupScreen(navController: NavController) {
             }
         }
 
-        // Save Button
         Button(
             onClick = { saveProfile() },
             modifier = Modifier
@@ -429,7 +445,6 @@ fun AccountSetupScreen(navController: NavController) {
             }
         }
 
-        // HIPAA Compliance Text
         Text(
             text = "Your data is encrypted and protected by HIPAA compliance",
             fontSize = 12.sp,
@@ -438,7 +453,6 @@ fun AccountSetupScreen(navController: NavController) {
         )
     }
 
-    // Date Picker Dialog
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },

@@ -72,6 +72,7 @@ fun NavGraph() {
         composable("home") { HomeScreen(navController) }
         composable("loading") { SplashScreen() }
         composable("forgot_password") { ForgotPasswordScreen(navController) }
+        composable("set_reminder") { SetReminderScreen(navController) }
     }
 }
 

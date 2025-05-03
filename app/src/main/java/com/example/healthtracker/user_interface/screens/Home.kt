@@ -1,5 +1,6 @@
 package com.example.healthtracker.user_interface.screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -27,6 +29,11 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import kotlin.math.log
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -226,24 +233,172 @@ private fun HealthSummarySection(
 
 @Composable
 private fun AppointmentsSection(navController: NavController) {
+    val firestore = Firebase.firestore
+    val auth = Firebase.auth
+    val currentUser = auth.currentUser
+    val userId = currentUser?.uid ?: ""
+
+    var upcomingAppointments by remember { mutableStateOf<List<Appointment>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Fetch upcoming appointments
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            isLoading = true
+            try {
+                val now = Calendar.getInstance().time
+                val querySnapshot = firestore.collection("appointments")
+                    .whereEqualTo("userId", userId)
+                    .whereGreaterThanOrEqualTo("date", now)
+                    .orderBy("date")
+                    .get()
+                    .await()
+
+                upcomingAppointments = querySnapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                }
+            } catch (e: Exception) {
+                errorMessage = "Failed to load appointments"
+                Log.e("HomeScreen", "Error fetching appointments", e)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         SectionHeader(
             title = "Upcoming Appointments",
-            onActionClick = { navController.navigate("appointments") }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        AppointmentCard(
-            day = "15",
-            doctorName = "Dr. Emily Watson",
-            appointmentType = "General Check-up",
-            time = "10:00AM"
-        )
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            errorMessage != null -> {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            upcomingAppointments.isEmpty() -> {
+                Text(
+                    text = "No upcoming appointments",
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+            else -> {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    upcomingAppointments.forEach { appointment ->
+                        AppointmentCard(
+                            appointment = appointment,
+                            onClick = { /* Handle click if needed */ }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
     }
 }
+
+@SuppressLint("RememberReturnType")
+@Composable
+private fun AppointmentCard(
+    appointment: Appointment,
+    onClick: () -> Unit = {}
+) {
+    val dateFormatter = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
+    val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = dateFormatter.format(appointment.date).take(6), // Shows "May 15"
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = appointment.doctorName,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Text(
+                    text = appointment.purpose,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Text(
+                text = timeFormatter.format(appointment.time),
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+// Add this data class if you don't have it already
+data class Appointment(
+    val id: String = "",
+    val userId: String = "",
+    val purpose: String = "",
+    val doctorName: String = "",
+    val date: Date = Date(),
+    val time: Date = Date(),
+    val createdAt: Date = Date(),
+    val status: String = "pending"
+)
 
 @Composable
 private fun MedicationRemindersSection(
@@ -297,7 +452,7 @@ private fun QuickActionsSection(navController: NavController) {
             QuickActionButton(
                 text = "Set Reminder",
                 iconRes = R.drawable.reminder,
-                onClick = { /*navController.navigate("reminders")*/ }
+                onClick = { navController.navigate("set_reminder") }
             )
 
             QuickActionButton(

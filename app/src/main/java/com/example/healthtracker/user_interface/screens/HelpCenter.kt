@@ -1,5 +1,7 @@
 package com.example.healthtracker.user_interface.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,13 +23,16 @@ import androidx.navigation.NavController
 
 @Composable
 fun HelpCenterScreen(navController: NavController) {
+    val context = LocalContext.current
+    val phoneNumber = "+998990000000"
+    val emailAddress = "akhmadjanovagulrukhsor@gmail.com"
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF0F0F0))
             .padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp)
-
-           .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState())
     ) {
         // Header
         Column(modifier = Modifier.padding(bottom = 24.dp)) {
@@ -66,10 +72,18 @@ fun HelpCenterScreen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             ActionButton("Call Us", Modifier.width(110.dp)) {
-                navController.navigate("call_support")
+                val intent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:$phoneNumber")
+                }
+                context.startActivity(intent)
             }
             ActionButton("Email", Modifier.width(110.dp)) {
-                navController.navigate("email_support")
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("mailto:$emailAddress")
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf(emailAddress))
+                    putExtra(Intent.EXTRA_SUBJECT, "Health Tracker Support")
+                }
+                context.startActivity(intent)
             }
         }
 

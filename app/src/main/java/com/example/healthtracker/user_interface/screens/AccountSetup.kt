@@ -28,9 +28,35 @@ import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
 
-// New color definitions
 
-val LightPurple = Color(0xFFD2B4DE)
+private fun calculateDailyCalories(
+    gender: String,
+    weight: Int,
+    height: Int,
+    age: Int,
+    activityLevel: Double = 1.55 // Moderate activity by default
+): Int {
+    // Harris-Benedict Equation
+    val bmr = when (gender.lowercase()) {
+        "male" -> 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
+        "female" -> 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
+        else -> 500.0 + (10.0 * weight) + (4.0 * height) - (5.0 * age) // Average for other genders
+    }
+    return (bmr * activityLevel).toInt()
+}
+
+private fun calculateAge(dateOfBirth: String): Int {
+    val sdf = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+    val dob = sdf.parse(dateOfBirth) ?: return 30 // Default age if parsing fails
+    val today = Calendar.getInstance()
+    val dobCalendar = Calendar.getInstance().apply { time = dob }
+
+    var age = today.get(Calendar.YEAR) - dobCalendar.get(Calendar.YEAR)
+    if (today.get(Calendar.DAY_OF_YEAR) < dobCalendar.get(Calendar.DAY_OF_YEAR)) {
+        age--
+    }
+    return age
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,16 +145,36 @@ fun AccountSetupScreen(navController: NavController) {
                     return
                 }
 
+                // Calculate age from date of birth
+                val age = try {
+                    calculateAge(dateOfBirth)
+                } catch (e: Exception) {
+                    30 // Default age if calculation fails
+                }
+
+                // Calculate daily calories
+                val dailyCalories = calculateDailyCalories(
+                    gender = selectedGender,
+                    weight = weight.toInt(),
+                    height = height.toInt(),
+                    age = age
+                )
+
                 val userData = hashMapOf(
                     "personalInfo" to hashMapOf(
                         "fullName" to fullName,
                         "dateOfBirth" to dateOfBirth,
-                        "gender" to selectedGender
+                        "gender" to selectedGender,
+                        "age" to age
                     ),
                     "physicalCharacteristics" to hashMapOf(
                         "bloodType" to bloodType,
                         "height" to height.toInt(),
-                        "weight" to weight.toInt()
+                        "weight" to weight.toInt(),
+                    ),
+                    "nutrition" to hashMapOf(
+                        "dailyCalories" to dailyCalories,
+                        "lastUpdated" to FieldValue.serverTimestamp()
                     ),
                     "medicalHistory" to hashMapOf(
                         "allergies" to processListInput(allergies),

@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -165,7 +167,7 @@ fun HomeScreen(navController: NavController) {
             )
 
             // Appointments Section
-            AppointmentsSection(navController)
+            AppointmentsSection(navController, userData)
 
             // Medication Reminders Section
             MedicationRemindersSection(
@@ -232,7 +234,7 @@ private fun HealthSummarySection(
 }
 
 @Composable
-private fun AppointmentsSection(navController: NavController) {
+private fun AppointmentsSection(navController: NavController, userData: UserData?) {
     val firestore = Firebase.firestore
     val auth = Firebase.auth
     val currentUser = auth.currentUser
@@ -270,6 +272,21 @@ private fun AppointmentsSection(navController: NavController) {
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        SectionHeader(
+            title = "Calorie Recommendation"
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Display calories if available
+        if (userData?.nutrition?.dailyCalories ?: 0 > 0) {
+            DailyCaloriesCard(
+                calories = userData?.nutrition?.dailyCalories ?: 0
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         SectionHeader(
             title = "Upcoming Appointments",
         )
@@ -571,10 +588,9 @@ fun MedicationCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.fire),
-                    contentDescription = "Medication",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -650,6 +666,62 @@ fun QuickActionButton(
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(top = 4.dp)
         )
+    }
+}
+
+@Composable
+private fun DailyCaloriesCard(
+    calories: Int
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "Your Daily Calorie Goal",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "$calories kcal",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.fire), // Use your calorie icon
+                    contentDescription = "Calories",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
     }
 }
 

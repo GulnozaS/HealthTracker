@@ -1,10 +1,18 @@
 package com.example.healthtracker.user_interface.screens
 
+import java.util.Date
+
 data class UserData(
     val personalInfo: PersonalInfo = PersonalInfo(),
     var physicalCharacteristics: PhysicalCharacteristics = PhysicalCharacteristics(),
     val medicalHistory: MedicalHistory = MedicalHistory(),
-    var healthMetrics: HealthMetrics = HealthMetrics()
+    var healthMetrics: HealthMetrics = HealthMetrics(),
+    val nutrition: NutritionData = NutritionData() // Add this field
+)
+
+data class NutritionData(
+    val dailyCalories: Int = 0,
+    val lastUpdated: Date? = null
 )
 
 data class PersonalInfo(

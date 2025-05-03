@@ -20,7 +20,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.healthtracker.R
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
@@ -28,6 +27,10 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
+
+// New color definitions
+
+val LightPurple = Color(0xFFD2B4DE)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +101,6 @@ fun AccountSetupScreen(navController: NavController) {
     }
 
     fun saveProfile() {
-        // Validate required fields
         when {
             fullName.isBlank() -> errorMessage = "Full name is required"
             dateOfBirth.isBlank() -> errorMessage = "Date of birth is required"
@@ -169,7 +171,7 @@ fun AccountSetupScreen(navController: NavController) {
             text = "Health Profile",
             fontSize = 36.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.primary // Updated color
         )
 
         Text(
@@ -181,7 +183,7 @@ fun AccountSetupScreen(navController: NavController) {
         errorMessage?.let { message ->
             Text(
                 text = message,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
@@ -199,7 +201,8 @@ fun AccountSetupScreen(navController: NavController) {
                 Text(
                     text = "Personal Information",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary // Updated color
                 )
 
                 OutlinedTextField(
@@ -216,7 +219,7 @@ fun AccountSetupScreen(navController: NavController) {
                         .background(Color.White, RoundedCornerShape(4.dp))
                         .border(
                             width = 1.dp,
-                            color = if (dateOfBirth.isBlank() && errorMessage != null) Color.Red else Color.Gray,
+                            color = if (dateOfBirth.isBlank() && errorMessage != null) MaterialTheme.colorScheme.error else Color.Gray,
                             shape = RoundedCornerShape(4.dp)
                         )
                         .clickable { showDatePicker = true }
@@ -229,23 +232,36 @@ fun AccountSetupScreen(navController: NavController) {
                     )
                 }
 
-                Text(text = "Gender *", fontSize = 16.sp)
+                Text(
+                    text = "Gender *",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary // Updated color
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = selectedGender == "Male",
-                        onClick = { selectedGender = "Male" }
+                        onClick = { selectedGender = "Male" },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary // Updated color
+                        )
                     )
                     Text(text = "Male", modifier = Modifier.padding(end = 16.dp))
 
                     RadioButton(
                         selected = selectedGender == "Female",
-                        onClick = { selectedGender = "Female" }
+                        onClick = { selectedGender = "Female" },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary // Updated color
+                        )
                     )
                     Text(text = "Female", modifier = Modifier.padding(end = 16.dp))
 
                     RadioButton(
                         selected = selectedGender == "Other",
-                        onClick = { selectedGender = "Other" }
+                        onClick = { selectedGender = "Other" },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = MaterialTheme.colorScheme.primary // Updated color
+                        )
                     )
                     Text(text = "Other")
                 }
@@ -265,10 +281,15 @@ fun AccountSetupScreen(navController: NavController) {
                 Text(
                     text = "Physical Characteristics",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary // Updated color
                 )
 
-                Text(text = "Blood Type *", fontSize = 16.sp)
+                Text(
+                    text = "Blood Type *",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary // Updated color
+                )
                 ExposedDropdownMenuBox(
                     expanded = bloodTypeExpanded,
                     onExpandedChange = { bloodTypeExpanded = !bloodTypeExpanded }
@@ -341,7 +362,8 @@ fun AccountSetupScreen(navController: NavController) {
                 Text(
                     text = "Medical History",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary // Updated color
                 )
 
                 OutlinedTextField(
@@ -352,7 +374,11 @@ fun AccountSetupScreen(navController: NavController) {
                     placeholder = { Text("peanuts, penicillin, etc.") }
                 )
 
-                Text(text = "Chronic Conditions", fontSize = 16.sp)
+                Text(
+                    text = "Chronic Conditions",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary // Updated color
+                )
                 conditions.forEach { condition ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
@@ -368,7 +394,10 @@ fun AccountSetupScreen(navController: NavController) {
                                         selectedConditions + condition
                                     }
                                 }
-                            }
+                            },
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = MaterialTheme.colorScheme.primary // Updated color
+                            )
                         )
                         Text(text = condition, modifier = Modifier.padding(start = 8.dp))
                     }
@@ -400,7 +429,8 @@ fun AccountSetupScreen(navController: NavController) {
                 Text(
                     text = "Emergency Contact",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary // Updated color
                 )
 
                 OutlinedTextField(
@@ -434,14 +464,17 @@ fun AccountSetupScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary, // Updated color
+                contentColor = Color.White
+            ),
             shape = RoundedCornerShape(25.dp),
             enabled = !isLoading
         ) {
             if (isLoading) {
                 CircularProgressIndicator(color = Color.White)
             } else {
-                Text(text = "Save Profile", fontSize = 16.sp, color = Color.White)
+                Text(text = "Save Profile", fontSize = 16.sp)
             }
         }
 
@@ -463,14 +496,14 @@ fun AccountSetupScreen(navController: NavController) {
                         showDatePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text("OK", color = MaterialTheme.colorScheme.primary) // Updated color
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showDatePicker = false }
                 ) {
-                    Text("Cancel")
+                    Text("Cancel", color = MaterialTheme.colorScheme.primary) // Updated color
                 }
             }
         ) {

@@ -12,7 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -217,13 +220,15 @@ private fun saveAppointment(
     onSuccess: () -> Unit
 ) {
     onLoading(true)
-
+    val firestore = Firebase.firestore
+    val currentUserId = Firebase.auth.currentUser?.uid ?: ""
     val appointment = hashMapOf(
         "purpose" to purpose,
         "doctorName" to doctorName,
         "date" to date,
         "time" to time,
-        "createdAt" to Date()
+        "createdAt" to Date(),
+        "userId" to currentUserId
     )
 
     db.collection("appointments")

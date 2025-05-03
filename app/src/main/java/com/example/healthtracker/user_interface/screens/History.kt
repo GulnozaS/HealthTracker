@@ -4,184 +4,194 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun HistoryScreen(navController: NavController) {
+    val firestore = Firebase.firestore
+    val currentUser = Firebase.auth.currentUser
+    val userId = currentUser?.uid ?: ""
+
+    var pastAppointments by remember { mutableStateOf<List<Appointment>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Date formatter
+    val dateFormatter = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
+    val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+
+    // Fetch past appointments
+    LaunchedEffect(userId) {
+        if (userId.isNotEmpty()) {
+            try {
+                val now = Calendar.getInstance().time
+                val querySnapshot = firestore.collection("appointments")
+                    .whereEqualTo("userId", userId)
+                    .whereLessThan("date", now)
+                    .orderBy("date")
+                    .get()
+                    .await()
+
+                pastAppointments = querySnapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Appointment::class.java)?.copy(id = doc.id)
+                }
+            } catch (e: Exception) {
+                errorMessage = "Failed to load history: ${e.localizedMessage}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color(0xFFF0F0F0))
-            .padding(start = 16.dp, end = 16.dp, top = 40.dp, bottom = 40.dp)
-
-    .verticalScroll(rememberScrollState()),
+            .padding(horizontal = 16.dp, vertical = 40.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header Section
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = "Medical Records",
+                text = "Medical History",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Text(
-                text = "View your complete medical history",
+                text = "View your past medical appointments",
                 fontSize = 16.sp,
                 color = Color.Gray
             )
         }
 
-        // Recent Records Card
-        MedicalRecordCard(
-            title = "General Checkup",
-            date = "May 15, 2023",
-            subtitle = "Dr. Sarah Johnson - Cardiology",
-            content = "Blood pressure: 120/80, Heart rate: 72 bpm"
-        )
-
-        // Lab Results Card
-        MedicalRecordCard(
-            title = "Metropolitan Medical Lab",
-            date = "May 1, 2023",
-            subtitle = "Complete Blood Count",
-            content = "Lipid Panel, Glucose Levels"
-        )
-
-        // Health Summary Section
-        Text(
-            text = "Health Summary",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            StatCard(title = "Prescriptions", value = "12")
-            StatCard(title = "Surgeries", value = "2")
-            StatCard(title = "Lab Tests", value = "8")
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            errorMessage != null -> {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            pastAppointments.isEmpty() -> {
+                Text(
+                    text = "No past appointments found",
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+            else -> {
+                // Past Appointments List
+                pastAppointments.forEach { appointment ->
+                    AppointmentCard(
+                       appointment = appointment
+                    )
+                }
+            }
         }
 
-        // Action Button
-        Button(
-            onClick = { navController.navigate("appointment") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF673AB7)
-            ),
-            shape = RoundedCornerShape(25.dp)
-        ) {
-            Text(
-                text = "Schedule New Appointment",
-                fontSize = 16.sp,
-                color = Color.White
-            )
-        }
-
-        // Footer Link
-        Text(
-            text = "View Complete History",
-            color = Color(0xFF673AB7),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .clickable { navController.navigate("full_history") }
-                .padding(8.dp)
-        )
     }
 }
 
 @Composable
-private fun MedicalRecordCard(
-    title: String,
-    date: String,
-    subtitle: String,
-    content: String
+private fun AppointmentCard(
+    appointment: Appointment,
+    onClick: () -> Unit = {}
 ) {
+    val dateFormatter = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
+    val timeFormatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(16.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = title,
+                    text = dateFormatter.format(appointment.date).take(6), // Shows "May 15"
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
-                )
-                Text(
-                    text = date,
-                    color = Color.Gray,
-                    fontSize = 14.sp
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = appointment.doctorName,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Text(
+                    text = appointment.purpose,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
 
             Text(
-                text = subtitle,
-                color = Color.Gray,
-                fontSize = 14.sp
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = content,
-                fontSize = 15.sp
-            )
-        }
-    }
-}
-
-@Composable
-private fun StatCard(title: String, value: String) {
-    Card(
-        modifier = Modifier
-            .width(100.dp)
-            .height(100.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = value,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF673AB7)
-            )
-            Text(
-                text = title,
+                text = timeFormatter.format(appointment.time),
                 fontSize = 14.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(top = 8.dp)
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Medium
             )
         }
     }
 }
+
+

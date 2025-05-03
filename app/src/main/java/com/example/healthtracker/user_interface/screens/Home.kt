@@ -93,7 +93,7 @@ fun HomeScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF673AB7))
+                .background(MaterialTheme.colorScheme.primary)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -200,7 +200,7 @@ fun HomeScreen(navController: NavController) {
                 TextButton(
                     onClick = { showLogoutDialog = false }
                 ) {
-                    Text("Cancel")
+                    Text("Cancel", color = MaterialTheme.colorScheme.primary)
                 }
             }
         )
@@ -542,71 +542,6 @@ fun HealthSummaryCard(item: HealthSummaryItem) {
 }
 
 @Composable
-fun AppointmentCard(
-    day: String,
-    doctorName: String,
-    appointmentType: String,
-    time: String
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFF673AB7)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = day,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = doctorName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-
-                Text(
-                    text = appointmentType,
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-            }
-
-            Text(
-                text = time,
-                fontSize = 14.sp,
-                color = Color(0xFF673AB7),
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
-}
-
-@Composable
 fun MedicationCard(
     name: String,
     dosage: String,
@@ -632,13 +567,13 @@ fun MedicationCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE1BEE7)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.fire),
                     contentDescription = "Medication",
-                    tint = Color(0xFF673AB7),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -665,13 +600,13 @@ fun MedicationCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFEDE7F6))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
                     text = time,
                     fontSize = 12.sp,
-                    color = Color(0xFF673AB7),
+                    color =MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -701,7 +636,7 @@ fun QuickActionButton(
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = text,
-                tint = Color(0xFF673AB7),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(32.dp)
             )
         }

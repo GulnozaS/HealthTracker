@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -329,7 +330,7 @@ fun SignUpScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(25.dp),
             enabled = !isLoading
         ) {
@@ -346,7 +347,7 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "Sign In",
-                color = Color(0xFF673AB7),
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {

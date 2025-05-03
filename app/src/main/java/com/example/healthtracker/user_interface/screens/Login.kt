@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -135,7 +136,7 @@ fun LoginScreen(navController: NavController) {
 
         Text(
             text = "Forgot Password?",
-            color = Color(0xFF673AB7),
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.End).clickable { navController.navigate("forgot_password")}
@@ -168,7 +169,7 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(25.dp)
         ) {
             Text(text = if (isLoading) "Signing In..." else "Sign In", fontSize = 16.sp, color = Color.White)
@@ -181,7 +182,7 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "Sign Up",
-                color = Color(0xFF673AB7),
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {

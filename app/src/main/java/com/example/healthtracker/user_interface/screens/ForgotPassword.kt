@@ -21,6 +21,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -64,7 +65,7 @@ fun ForgotPasswordScreen(navController: NavController) {
             TopAppBar(
                 title = { Text("Forgot Password") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF673AB7),
+                    containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
                 ),
@@ -178,7 +179,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(25.dp),
                 enabled = !isLoading
             ) {
@@ -199,7 +200,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "Sign In",
-                    color = Color(0xFF673AB7),
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable {

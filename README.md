@@ -2,7 +2,6 @@
 
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-1.9.0-blue.svg)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-1.6.0-brightgreen)](https://developer.android.com/jetpack/compose)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 An all-in-one Android app to track symptoms, medications, and habits for chronic condition management, powered by **Firebase** and **Gemini API**.
 

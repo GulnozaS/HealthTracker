@@ -29,4 +29,4 @@ An all-in-one Android app to track symptoms, medications, and habits for chronic
 ## 📥 Installation
 1. Clone the repo:
    ```bash
-   git clone https://github.com/yourusername/HealthTracker.git](https://github.com/GulnozaS/HealthTracker.git
+   git clone https://github.com/GulnozaS/HealthTracker.git
